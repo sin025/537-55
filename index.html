@@ -1,1 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>家用配電箱開關說明指引</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Font - Inter & Noto Sans TC -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#fffbebe',
+              500: '#f59e0b',
+              600: '#d97706',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* 隱藏滾動條但保持滾動 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .highlight-mark {
+      background-color: rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+      padding: 0 4px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-12 font-sans antialiased selection:bg-amber-500 selection:text-slate-900">
 
+  <!-- 頂部 Header -->
+  <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 shadow-lg">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 shadow-md shadow-amber-500/20">
+          <i class="fa-solid fa-bolt text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-bold leading-tight text-slate-100">配電箱開關指引</h1>
+          <p class="text-xs text-slate-400">Electrical Panel Directory</p>
+        </div>
+      </div>
+      <button id="resetFilterBtn" class="text-xs px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1 border border-slate-700">
+        <i class="fa-solid fa-rotate-left text-[10px]"></i> 重設
+      </button>
+    </div>
+  </header>
+
+  <!-- 主要內容區域 -->
+  <main class="max-w-md mx-auto px-4 pt-4 space-y-4">
+
+    <!-- 搜尋與篩選列 -->
+    <section class="space-y-3">
+      <!-- 搜尋框 -->
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+        <input type="text" id="searchInput" placeholder="搜尋區域或設備 (如：冷氣、廚房、插座)..." 
+               class="w-full pl-10 pr-9 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition shadow-inner">
+        <button id="clearSearch" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </button>
+      </div>
+
+      <!-- 快速篩選 Chip (橫向滾動) -->
+      <div class="flex space-x-2 overflow-x-auto no-scrollbar py-1 text-xs">
+        <button class="filter-chip active flex-shrink-0 px-3 py-1.5 rounded-lg border font-medium transition bg-amber-500 border-amber-500 text-slate-950" data-filter="all">全區</button>
+        <button class="filter-chip flex-shrink-0 px-3 py-1.5 rounded-lg border font-medium transition bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-600" data-filter="heavy">高功率 (2P)</button>
+        <button class="filter-chip flex-shrink-0 px-3 py-1.5 rounded-lg border font-medium transition bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-600" data-filter="kitchen">廚房</button>
+        <button class="filter-chip flex-shrink-0 px-3 py-1.5 rounded-lg border font-medium transition bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-600" data-filter="living">客廳/餐廳</button>
+        <button class="filter-chip flex-shrink-0 px-3 py-1.5 rounded-lg border font-medium transition bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-600" data-filter="bedroom">臥室/和室</button>
+        <button class="filter-chip flex-shrink-0 px-3 py-1.5 rounded-lg border font-medium transition bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-600" data-filter="bathroom">衛浴</button>
+        <button class="filter-chip flex-shrink-0 px-3 py-1.5 rounded-lg border font-medium transition bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-600" data-filter="outdoor">騎樓/戶外</button>
+      </div>
+    </section>
+
+    <!-- 核心總開關區 (Main Breaker & GFCI) -->
+    <section class="grid grid-cols-1 gap-3" id="mainCoreSection">
+      <!-- 總開關 -->
+      <div class="bg-gradient-to-r from-red-950/40 via-slate-900 to-slate-900 border-2 border-red-500/60 rounded-2xl p-4 shadow-lg shadow-red-950/20 relative overflow-hidden">
+        <div class="absolute right-0 top-0 bottom-0 w-1.5 bg-red-500"></div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-11 h-11 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 flex items-center justify-center font-bold text-lg shadow-inner">
+              ★
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold px-2 py-0.5 rounded bg-red-500 text-slate-950">MAIN</span>
+                <h2 class="font-bold text-slate-100">總電源總開關</h2>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">主控整棟房屋主要供電來源</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-lg font-black text-red-400 tracking-wider">60A</span>
+            <span class="block text-[10px] text-slate-400 font-mono">2P 開關</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 漏電保護警示 -->
+      <div class="bg-amber-950/20 border border-amber-500/40 rounded-2xl p-3.5 flex items-start space-x-3 shadow-md">
+        <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex-shrink-0 flex items-center justify-center text-sm mt-0.5">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div class="text-xs space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-amber-400">◆ 漏電斷路器 (RCD/GFCI) 安全防護標示</span>
+            <span class="text-[10px] text-amber-300/80 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">受保護地區</span>
+          </div>
+          <p class="text-slate-300 leading-relaxed">
+            此保護裝置關聯防範：
+            <span class="inline-block bg-slate-900 px-2 py-0.5 rounded text-amber-300 font-medium border border-amber-500/20 mr-1 mt-1">小廁所插座</span>
+            <span class="inline-block bg-slate-900 px-2 py-0.5 rounded text-amber-300 font-medium border border-amber-500/20">騎樓左側插座</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 分類一：高功率 / 2P 專用迴路 -->
+    <section class="breaker-group space-y-2.5" id="group2P">
+      <div class="flex items-center justify-between px-1">
+        <h3 class="text-xs font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
+          <i class="fa-solid fa-plug-circle-bolt text-sm"></i> 高功率迴路 (2P 專用專線)
+        </h3>
+        <span class="text-[11px] text-slate-500">共 5 組</span>
+      </div>
+
+      <div class="grid grid-cols-1 gap-2.5">
+        <!-- 迴路 ① -->
+        <div class="breaker-card bg-slate-900 border border-slate-800 hover:border-sky-500/40 rounded-xl p-3.5 transition shadow-sm"
+             data-keywords="冷氣 1 空調 2p 20a 高功率 heavy" data-category="heavy">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <span class="w-7 h-7 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center font-bold text-xs">①</span>
+              <div>
+                <h4 class="text-sm font-semibold text-slate-200">冷氣 1</h4>
+                <p class="text-xs text-slate-400">獨立專用迴路</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-sky-950 text-sky-300 border border-sky-800">2P 20A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 迴路 ② -->
+        <div class="breaker-card bg-slate-900 border border-slate-800 hover:border-sky-500/40 rounded-xl p-3.5 transition shadow-sm"
+             data-keywords="冷氣 2 空調 2p 20a 高功率 heavy" data-category="heavy">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <span class="w-7 h-7 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center font-bold text-xs">②</span>
+              <div>
+                <h4 class="text-sm font-semibold text-slate-200">冷氣 2</h4>
+                <p class="text-xs text-slate-400">獨立專用迴路</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-sky-950 text-sky-300 border border-sky-800">2P 20A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 迴路 ③ -->
+        <div class="breaker-card bg-slate-900 border border-slate-800 hover:border-sky-500/40 rounded-xl p-3.5 transition shadow-sm"
+             data-keywords="冷氣 3 空調 2p 20a 高功率 heavy" data-category="heavy">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <span class="w-7 h-7 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center font-bold text-xs">③</span>
+              <div>
+                <h4 class="text-sm font-semibold text-slate-200">冷氣 3</h4>
+                <p class="text-xs text-slate-400">獨立專用迴路</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-sky-950 text-sky-300 border border-sky-800">2P 20A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 迴路 ④ -->
+        <div class="breaker-card bg-slate-900 border border-slate-800 hover:border-sky-500/40 rounded-xl p-3.5 transition shadow-sm"
+             data-keywords="冷氣機 4 冷氣4 空調 2p 20a 高功率 heavy" data-category="heavy">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <span class="w-7 h-7 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center font-bold text-xs">④</span>
+              <div>
+                <h4 class="text-sm font-semibold text-slate-200">冷氣機 4</h4>
+                <p class="text-xs text-slate-400">獨立專用迴路</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-sky-950 text-sky-300 border border-sky-800">2P 20A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 迴路 ⑤ -->
+        <div class="breaker-card bg-slate-900 border border-slate-800 hover:border-purple-500/40 rounded-xl p-3.5 transition shadow-sm"
+             data-keywords="熱水器 2p 30a 高功率 heavy 浴室" data-category="heavy bathroom">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <span class="w-7 h-7 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center font-bold text-xs">⑤</span>
+              <div>
+                <h4 class="text-sm font-semibold text-slate-200">熱水器</h4>
+                <p class="text-xs text-slate-400">電熱水器專用迴路</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-purple-950 text-purple-300 border border-purple-800">2P 30A</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 分類二：一般單相 / 1P 迴路 -->
+    <section class="breaker-group space-y-2.5" id="group1P">
+      <div class="flex items-center justify-between px-1 pt-2">
+        <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+          <i class="fa-solid fa-lightbulb text-sm"></i> 一般迴路 (1P 照明與插座)
+        </h3>
+        <span class="text-[11px] text-slate-500">共 7 組</span>
+      </div>
+
+      <div class="grid grid-cols-1 gap-2.5">
+
+        <!-- 迴路 ❶ (含漏電保護) -->
+        <div class="breaker-card bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-xl p-3.5 transition shadow-sm"
+             data-keywords="小廁所插座 騎樓左側插座 漏電 1p 20a 衛浴 戶外" data-category="bathroom outdoor">
+          <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-3">
+              <span class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-xs mt-0.5">❶</span>
+              <div class="space-y-1">
+                <div class="flex items-center gap-1.5">
+                  <h4 class="text-sm font-semibold text-slate-200">衛浴與騎樓插座</h4>
+                  <span class="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded border border-amber-500/30">◆ 帶漏電保護</span>
+                </div>
+                <ul class="text-xs text-slate-400 space-y-1 pt-1">
+                  <li class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    <span>小廁所：<strong class="text-slate-300">小廁所插座</strong></span>
+                  </li>
+                  <li class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    <span>騎樓：<strong class="text-slate-300">左側插座</strong></span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">1P 20A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 迴路 ❷ (多區域綜合迴路 - 可展開收合) -->
+        <div class="breaker-card bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-xl transition shadow-sm overflow-hidden"
+             data-keywords="廚房電燈 抽油煙機插座 客廳電燈 客廳插座 餐廳2電燈 餐廳插座 小廁所電燈 小走廊電燈 次臥電燈 次臥插座 騎樓 小門電燈 小門插座 中間電燈 左側電燈 主臥廁所電燈 主臥廁所插座 1p 20a 廚房 客廳 餐廳 衛浴 臥室 戶外" 
+             data-category="kitchen living bedroom bathroom outdoor">
+          <div class="p-3.5 cursor-pointer flex items-start justify-between bg-slate-900 hover:bg-slate-850" onclick="toggleExpand('card2-details', 'card2-icon')">
+            <div class="flex items-start space-x-3">
+              <span class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-xs mt-0.5">❷</span>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h4 class="text-sm font-semibold text-slate-200">全屋主要通用照明與插座迴路</h4>
+                </div>
+                <p class="text-xs text-slate-400 mt-0.5">涵蓋客廳、廚房、次臥、騎樓及廁所電燈插座</p>
+                <span class="inline-flex items-center gap-1 text-[11px] text-amber-400 font-medium mt-1">
+                  <i class="fa-solid fa-layer-group"></i> 點擊展開 7 個分區細節
+                </span>
+              </div>
+            </div>
+            <div class="text-right flex flex-col items-end gap-2">
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">1P 20A</span>
+              <i id="card2-icon" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-300"></i>
+            </div>
+          </div>
+
+          <!-- 展開內容 -->
+          <div id="card2-details" class="hidden border-t border-slate-800 bg-slate-950/60 p-3.5 space-y-3 text-xs">
+            
+            <div class="grid grid-cols-1 gap-2.5">
+              <!-- 廚房 -->
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80">
+                <span class="font-bold text-amber-400 block mb-1">● 廚房：</span>
+                <div class="text-slate-300 space-y-0.5 pl-2 border-l border-slate-700">
+                  <div>• 廚房電燈</div>
+                  <div>• 抽油煙機插座</div>
+                </div>
+              </div>
+
+              <!-- 客廳 -->
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80">
+                <span class="font-bold text-sky-400 block mb-1">● 客廳：</span>
+                <div class="text-slate-300 space-y-0.5 pl-2 border-l border-slate-700">
+                  <div>• 客廳電燈</div>
+                  <div>• 客廳插座 ×2</div>
+                </div>
+              </div>
+
+              <!-- 餐廳 -->
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80">
+                <span class="font-bold text-teal-400 block mb-1">● 餐廳：</span>
+                <div class="text-slate-300 space-y-0.5 pl-2 border-l border-slate-700">
+                  <div>• 餐廳 2 電燈</div>
+                  <div>• 餐廳插座 ×1</div>
+                </div>
+              </div>
+
+              <!-- 小廁所 & 走廊 -->
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80">
+                <span class="font-bold text-indigo-400 block mb-1">● 小廁所與走廊：</span>
+                <div class="text-slate-300 space-y-0.5 pl-2 border-l border-slate-700">
+                  <div>• 小廁所電燈</div>
+                  <div>• 小走廊電燈</div>
+                </div>
+              </div>
+
+              <!-- 次臥 -->
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80">
+                <span class="font-bold text-purple-400 block mb-1">● 次臥：</span>
+                <div class="text-slate-300 space-y-0.5 pl-2 border-l border-slate-700">
+                  <div>• 次臥電燈</div>
+                  <div>• 次臥插座 ×2</div>
+                </div>
+              </div>
+
+              <!-- 騎樓 -->
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80">
+                <span class="font-bold text-orange-400 block mb-1">● 騎樓：</span>
+                <div class="text-slate-300 space-y-0.5 pl-2 border-l border-slate-700">
+                  <div>• 小門電燈 / 小門插座</div>
+                  <div>• 中間電燈 / 左側電燈</div>
+                </div>
+              </div>
+
+              <!-- 主臥廁所 -->
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800/80">
+                <span class="font-bold text-pink-400 block mb-1">● 主臥廁所：</span>
+                <div class="text-slate-300 space-y-0.5 pl-2 border-l border-slate-700">
+                  <div>• 主臥廁所電燈</div>
+                  <div>• 主臥廁所插座 ×2</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 迴路 ❸ -->
+        <div class="breaker-card bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-xl p-3.5 transition shadow-sm"
+             data-keywords="主臥電燈 主臥插座 和室電燈 和室插座 1p 20a 臥室" data-category="bedroom">
+          <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-3">
+              <span class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-xs mt-0.5">❸</span>
+              <div class="space-y-1">
+                <h4 class="text-sm font-semibold text-slate-200">主臥室與和室迴路</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-400 pt-1">
+                  <div>● 主臥：<span class="text-slate-300">電燈、插座 ×3</span></div>
+                  <div>● 和室次臥：<span class="text-slate-300">電燈、插座 ×2</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">1P 20A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 迴路 ❹ -->
+        <div class="breaker-card bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-xl p-3.5 transition shadow-sm"
+             data-keywords="餐廳 冰箱插座 廚房 廚下插座 1p 20a 廚房" data-category="kitchen living">
+          <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-3">
+              <span class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-xs mt-0.5">❹</span>
+              <div class="space-y-1">
+                <h4 class="text-sm font-semibold text-slate-200">冰箱與廚下電器專用</h4>
+                <div class="text-xs text-slate-400 space-y-0.5 pt-1">
+                  <div>● 餐廳：<span class="text-slate-300 font-medium">冰箱插座</span></div>
+                  <div>● 廚房：<span class="text-slate-300 font-medium">廚下插座</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">1P 20A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 迴路 ❺ -->
+        <div class="breaker-card bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-xl p-3.5 transition shadow-sm"
+             data-keywords="廚房 廚房檯面獨立插座 獨立插座 1p 20a" data-category="kitchen">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <span class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-xs">❺</span>
+              <div>
+                <h4 class="text-sm font-semibold text-slate-200">廚房檯面獨立插座</h4>
+                <p class="text-xs text-slate-400">供微波爐/電鍋/高功率小家電</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">1P 20A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 迴路 ❻ -->
+        <div class="breaker-card bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-xl p-3.5 transition shadow-sm"
+             data-keywords="廚房 廚房後獨立插座 獨立插座 1p 30a" data-category="kitchen">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <span class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-xs">❻</span>
+              <div>
+                <h4 class="text-sm font-semibold text-slate-200">廚房後獨立插座</h4>
+                <p class="text-xs text-slate-400">後方高用電量設備專用</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-amber-950 text-amber-300 border border-amber-800">1P 30A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 迴路 ❼ -->
+        <div class="breaker-card bg-slate-900/60 border border-slate-800/80 rounded-xl p-3.5 transition opacity-75 hover:opacity-100"
+             data-keywords="其他 預備開關 備用 1p 30a" data-category="all">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <span class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 border border-slate-700 flex items-center justify-center font-bold text-xs">❼</span>
+              <div>
+                <h4 class="text-sm font-medium text-slate-400">預備開關 (備用)</h4>
+                <p class="text-xs text-slate-500">尚未使用 / 未外接迴路</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700">1P 30A</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 查無搜尋結果提示 -->
+    <div id="noResults" class="hidden text-center py-10 space-y-2">
+      <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-slate-500 text-lg">
+        <i class="fa-solid fa-magnifying-glass-slash"></i>
+      </div>
+      <p class="text-sm text-slate-400 font-medium">找不到符合條件的開關迴路</p>
+      <p class="text-xs text-slate-600">請嘗試更換關鍵字或點擊「重設」</p>
+    </div>
+
+    <!-- 安全注意事項提示 Card -->
+    <section class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 space-y-2.5 text-xs text-slate-400 mt-6">
+      <div class="flex items-center space-x-2 text-slate-200 font-bold">
+        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+        <span>用電安全須知</span>
+      </div>
+      <ul class="space-y-1.5 pl-5 list-disc text-slate-400 leading-relaxed">
+        <li>更換燈具或維修插座前，請務必先將對應開關切換至 <strong class="text-amber-400">OFF (關閉)</strong> 狀態。</li>
+        <li>建議每半個月或一個月按下漏電斷路器上的 <strong class="text-slate-300">「測試鈕 (Test Button)」</strong>，確認保護功能是否正常跳脫。</li>
+        <li>若特定跳線頻繁跳脫 (Trip)，可能代表迴路過載或設備漏電，請聯繫專業電工檢查。</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    // 展開/收合開關細節
+    function toggleExpand(detailsId, iconId) {
+      const details = document.getElementById(detailsId);
+      const icon = document.getElementById(iconId);
+      if (details.classList.contains('hidden')) {
+        details.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+      } else {
+        details.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+      }
+    }
+
+    // 搜尋與篩選邏輯
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('searchInput');
+      const clearSearchBtn = document.getElementById('clearSearch');
+      const filterChips = document.querySelectorAll('.filter-chip');
+      const breakerCards = document.querySelectorAll('.breaker-card');
+      const noResults = document.getElementById('noResults');
+      const resetBtn = document.getElementById('resetFilterBtn');
+
+      let currentCategory = 'all';
+
+      // 執行過濾
+      function filterBreakers() {
+        const query = searchInput.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        // 控制清除搜尋按鈕顯示
+        if (query.length > 0) {
+          clearSearchBtn.classList.remove('hidden');
+        } else {
+          clearSearchBtn.classList.add('hidden');
+        }
+
+        breakerCards.forEach(card => {
+          const keywords = card.getAttribute('data-keywords').toLowerCase();
+          const categories = card.getAttribute('data-category');
+          const textContent = card.textContent.toLowerCase();
+
+          // 分類匹配
+          const categoryMatch = (currentCategory === 'all') || 
+                                (categories && categories.includes(currentCategory));
+
+          // 關鍵字匹配
+          const searchMatch = !query || keywords.includes(query) || textContent.includes(query);
+
+          if (categoryMatch && searchMatch) {
+            card.classList.remove('hidden');
+            visibleCount++;
+
+            // 如果是在關鍵字搜尋狀態下，自動展開卡片 ❷ 方便閱讀
+            if (query && card.querySelector('#card2-details')) {
+              const details = card.querySelector('#card2-details');
+              const icon = card.querySelector('#card2-icon');
+              details.classList.remove('hidden');
+              icon.classList.add('rotate-180');
+            }
+          } else {
+            card.classList.add('hidden');
+          }
+        });
+
+        // 查無結果
+        if (visibleCount === 0) {
+          noResults.classList.remove('hidden');
+        } else {
+          noResults.classList.add('hidden');
+        }
+      }
+
+      // 搜尋輸入監聽
+      searchInput.addEventListener('input', filterBreakers);
+
+      // 清除搜尋
+      clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        filterBreakers();
+        searchInput.focus();
+      });
+
+      // 篩選 Chip 點擊
+      filterChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          filterChips.forEach(c => {
+            c.classList.remove('active', 'bg-amber-500', 'border-amber-500', 'text-slate-950');
+            c.classList.add('bg-slate-900', 'border-slate-700', 'text-slate-300');
+          });
+
+          chip.classList.add('active', 'bg-amber-500', 'border-amber-500', 'text-slate-950');
+          chip.classList.remove('bg-slate-900', 'border-slate-700', 'text-slate-300');
+
+          currentCategory = chip.getAttribute('data-filter');
+          filterBreakers();
+        });
+      });
+
+      // 重設按鈕
+      resetBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        currentCategory = 'all';
+
+        filterChips.forEach(c => {
+          if (c.getAttribute('data-filter') === 'all') {
+            c.classList.add('active', 'bg-amber-500', 'border-amber-500', 'text-slate-950');
+            c.classList.remove('bg-slate-900', 'border-slate-700', 'text-slate-300');
+          } else {
+            c.classList.remove('active', 'bg-amber-500', 'border-amber-500', 'text-slate-950');
+            c.classList.add('bg-slate-900', 'border-slate-700', 'text-slate-300');
+          }
+        });
+
+        // 收合 card2
+        const details2 = document.getElementById('card2-details');
+        const icon2 = document.getElementById('card2-icon');
+        if (details2) details2.classList.add('hidden');
+        if (icon2) icon2.classList.remove('rotate-180');
+
+        filterBreakers();
+      });
+    });
+  </script>
+</body>
+</html>
